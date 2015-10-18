@@ -1,0 +1,529 @@
+<html>
+<head>
+    <title>Play with Kelly!</title>
+    <link rel="stylesheet" type="text/css" href="TicTacToeStylesheet.css"/>
+</head>
+
+<body>
+<script type="text/javascript">
+    var myPiece;
+    var yourPiece;
+    var nowDate = new Date();
+    var timeDif;
+    var intervalID;
+    var board = [['grid1', 'grid2', 'grid3'],
+                 ['grid4', 'grid5', 'grid6'],
+                 ['grid7', 'grid8', 'grid9']];
+    var played = [[0, 0, 0],
+                 [0, 0, 0],
+                 [0, 0, 0]];
+    var corners = ['grid1', 'grid3', 'grid7', 'grid9'];
+    var firstturn = true;
+
+    function StartGame() {
+        var randNum;
+        Reset();
+        if (document.getElementById('X').checked) {
+            yourPiece = 'X';
+            myPiece = 'O';
+        }
+        else {
+            yourPiece = 'O';
+            myPiece = 'X';
+        }
+        document.getElementById('X').disabled = true;
+        document.getElementById('O').disabled = true;
+        document.getElementById('Normal').disabled = true;
+        document.getElementById('Speedy').disabled = true;
+        document.getElementById('start').disabled = true;
+        DisableButtons(false);
+        randNum = Math.floor((Math.random() * 2));
+        nowDate = new Date();
+        clearInterval(intervalID);
+        intervalID = setInterval(function () { SetTimer() }, 10);
+        if (randNum == 0) {
+            document.getElementById('whosturn').innerHTML = "You go first!";
+        }
+        else {
+            document.getElementById('whosturn').innerHTML = "I go first!";
+            DisableButtons(true);
+            setTimeout(function () {
+                MyTurn();
+                FreeButtons();
+            }, 900);           
+        }
+    }
+
+    function FreeButtons() {
+        var x, y;
+        for (x = 0; x < 3; x++) {
+            for (y = 0; y < 3; y++) {
+                if (played[x][y] == 0)
+                    document.getElementById(board[x][y]).disabled = false;
+            }
+        }
+    }
+
+    function DisableButtons(act) {
+        var x, y;
+        for (x = 0; x < 3; x++) {
+            for (y = 0; y < 3; y++) {
+                document.getElementById(board[x][y]).disabled = act;
+            }
+        }
+    }
+
+    function YouClick(x, y) {
+        nowDate = new Date();
+        clearInterval(intervalID);
+        intervalID = setInterval(function () { SetTimer() }, 1);
+        document.getElementById(board[x][y]).innerHTML = yourPiece;
+        document.getElementById(board[x][y]).style.color = 'red';
+        document.getElementById(board[x][y]).disabled = true;
+        played[x][y] = 1;
+        ItsMyTurn();
+    }
+
+    function ItsMyTurn() {
+        DisableButtons(true);
+        if (CheckResult() == false) {
+            document.getElementById('whosturn').innerHTML = "It's my turn!";
+            setTimeout(function () {
+                if (MyTurn() == false) {
+                    FreeButtons();
+                }
+            }, 900); 
+        }
+    }
+
+    function MyTurn() {
+        nowDate = new Date();
+        clearInterval(intervalID);
+        intervalID = setInterval(function () { SetTimer() }, 1);
+        if (firstturn == true) {
+            FirstMove();
+            firstturn = false;
+            return false;
+        }
+        if (CheckTwos(myPiece) == true) {            
+            return CheckResult();
+        }
+        if (CheckCornerTwos(myPiece) == true) {
+            return CheckResult();
+        }
+        if (CheckTwos(yourPiece) == true) {
+            return CheckResult();
+        }
+        if (CheckCornerTwos(yourPiece) == true) {
+            return CheckResult();
+        }
+        if (BlockCorner() == true) {
+            return CheckResult();
+        }
+        if (CheckCornerOne() == true) {
+            return CheckResult();
+        }
+        LeftOver();
+        return CheckResult();
+    }
+
+    function FirstMove() {
+        var randCorner, x, y;
+        if (CheckMid() == true) {
+            return;
+        }
+        randCorner = Math.floor((Math.random() * 4));
+        if (randCorner == 0) {
+            x = 0;
+            y = 0;
+        }
+        else if (randCorner == 1) {
+            x = 0;
+            y = 2;
+        }
+        else if (randCorner == 2) {
+            x = 2;
+            y = 0;
+        }
+        else if (randCorner == 3) {
+            x = 2;
+            y = 2;
+        }   
+        CompleteTurn(x, y);       
+        document.getElementById('whosturn').innerHTML = "It's your turn!";
+    }
+
+    function CheckMid() {
+        if (document.getElementById(board[1][1]).innerHTML == "") {
+            CompleteTurn(1, 1);
+            return true;
+        }
+        return false;
+    }
+
+    function CompleteTurn(x, y) {
+        document.getElementById(board[x][y]).innerHTML = myPiece;
+        document.getElementById(board[x][y]).style.color = '#0000FF';
+        document.getElementById(board[x][y]).disabled = true;
+        played[x][y] = 1;
+        document.getElementById('whosturn').innerHTML = "It's your turn!";
+    }
+
+    function BlockCorner() {
+        if (document.getElementById(corners[0]).innerHTML == yourPiece) {
+            if (document.getElementById(corners[1]).innerHTML == "") {
+                CompleteTurn(0, 2);
+                return true;
+            }
+            else if (document.getElementById(corners[2]).innerHTML == "") {
+                CompleteTurn(2, 0);
+                return true;
+            }
+            else if (document.getElementById(corners[3]).innerHTML == "") {
+                CompleteTurn(2, 2);
+                return true;
+            }
+        }
+        else if (document.getElementById(corners[1]).innerHTML == yourPiece) {
+            if (document.getElementById(corners[2]).innerHTML == "") {
+                CompleteTurn(2, 0);
+                return true;
+            }
+            else if (document.getElementById(corners[3]).innerHTML == "") {
+                CompleteTurn(2, 2);
+                return true;
+            }
+        }
+        else if (document.getElementById(corners[2]).innerHTML == yourPiece) {
+            if (document.getElementById(corners[3]).innerHTML == "") {
+                CompleteTurn(2, 2);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function CheckCornerOne() {
+        if (document.getElementById(corners[0]).innerHTML == myPiece) {
+            if (document.getElementById(corners[1]).innerHTML == "" && document.getElementById(board[0][1]).innerHTML != yourPiece) {
+                CompleteTurn(0, 2);
+                return true;
+            }
+            else if (document.getElementById(corners[2]).innerHTML == "" && document.getElementById(board[1][0]).innerHTML != yourPiece) {
+                CompleteTurn(2, 0);
+                return true;
+            }
+            else if (document.getElementById(corners[3]).innerHTML == "" && document.getElementById(board[1][1]).innerHTML != yourPiece) {
+                CompleteTurn(2, 2);
+                return true;
+            }
+        }
+        else if (document.getElementById(corners[1]).innerHTML == myPiece) {
+            if (document.getElementById(corners[2]).innerHTML == "" && document.getElementById(board[1][1]).innerHTML != yourPiece) {
+                CompleteTurn(2, 0);
+                return true;
+            }
+            else if (document.getElementById(corners[3]).innerHTML == "" && document.getElementById(board[1][2]).innerHTML != yourPiece) {
+                CompleteTurn(2, 2);
+                return true;
+            }
+        }
+        else if (document.getElementById(corners[2]).innerHTML == myPiece) {
+            if (document.getElementById(corners[3]).innerHTML == "" && document.getElementById(board[2][1]).innerHTML != yourPiece) {
+                CompleteTurn(2, 2);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function Win(piece) {
+        DisableButtons(true);
+        clearInterval(intervalID);
+        document.getElementById('whosturn').innerHTML = 'Player ' + piece + ' wins!';
+        document.getElementById('X').disabled = false;
+        document.getElementById('O').disabled = false;
+        document.getElementById('Normal').disabled = false;
+        document.getElementById('Speedy').disabled = false;
+        document.getElementById('start').disabled = false;
+        document.getElementById('start').innerHTML = 'Play Again';
+    }
+
+    function Reset() {
+        var x, y;
+        for (x = 0; x < 3; x++) {
+            for (y = 0; y < 3; y++) {
+                document.getElementById(board[x][y]).innerHTML = "";
+                played[x][y] = 0;
+            }
+        }
+        firstturn = true;
+    }
+
+    function CheckComplete() {
+        var x, y;
+        for (x = 0; x < 3; x++) {
+            for (y = 0; y < 3; y++) {
+                if (document.getElementById(board[x][y]).innerHTML == "") {
+                    return false;
+                }
+            }
+        }
+        clearInterval(intervalID);
+        return true;
+    }
+
+    function CheckResult() {
+        var piece;
+        piece = document.getElementById(corners[0]).innerHTML;
+        if (piece != "") {
+            if (document.getElementById(board[0][1]).innerHTML == piece && document.getElementById(board[0][2]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+            else if (document.getElementById(board[1][0]).innerHTML == piece && document.getElementById(board[2][0]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+            else if (document.getElementById(board[1][1]).innerHTML == piece && document.getElementById(board[2][2]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+        }
+        piece = document.getElementById(corners[1]).innerHTML;
+        if (piece != "") {
+            if (document.getElementById(board[1][1]).innerHTML == piece && document.getElementById(board[2][0]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+            else if (document.getElementById(board[1][2]).innerHTML == piece && document.getElementById(board[2][2]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+        }
+        piece = document.getElementById(corners[2]).innerHTML;
+        if (piece != "") {
+            if (document.getElementById(board[2][1]).innerHTML == piece && document.getElementById(board[2][2]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+        }
+        piece = document.getElementById(board[1][0]).innerHTML;
+        if (piece != "") {
+            if (document.getElementById(board[1][1]).innerHTML == piece && document.getElementById(board[1][2]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+        }
+        piece = document.getElementById(board[0][1]).innerHTML;
+        if (piece != "") {
+            if (document.getElementById(board[1][1]).innerHTML == piece && document.getElementById(board[2][1]).innerHTML == piece) {
+                Win(piece);
+                return;
+            }
+        }
+        if (CheckComplete() == true) {
+            document.getElementById('whosturn').innerHTML = "It's a draw!";
+            DisableButtons(true);
+            document.getElementById('X').disabled = false;
+            document.getElementById('O').disabled = false;
+            document.getElementById('Normal').disabled = false;
+            document.getElementById('Speedy').disabled = false;
+            document.getElementById('start').disabled = false;
+            document.getElementById('start').innerHTML = 'Play Again';
+            return;
+        }
+        return false;
+    }
+
+    function LeftOver() {
+        var x, y;
+        for (x = 0; x < 3; x++) {
+            for (y = 2; y >= 0; y--) {
+                if (document.getElementById(board[x][y]).innerHTML == "") {
+                    CompleteTurn(x, y);
+                    return;
+                }
+            }
+        }
+    }
+
+    function CheckTwos(piece) {
+        var x, y;
+        for (x = 0; x < 3; x++) {
+            for (y = 0; y < 3; y++) {
+                if (y + 1 < 3 && document.getElementById(board[x][y + 1]).innerHTML == piece && document.getElementById(board[x][y]).innerHTML == piece) {
+                    if (y + 2 < 3 && document.getElementById(board[x][y + 2]).innerHTML == "") {
+                        CompleteTurn(x, y + 2);
+                        return true;
+                    }
+                    else if (y + 2 >= 3) {
+                        if (document.getElementById(board[x][y - 1]).innerHTML == "") {
+                            CompleteTurn(x, y - 1);
+                            return true;
+                        }
+                    }
+                }
+                if (x + 1 < 3 && document.getElementById(board[x + 1][y]).innerHTML == piece && document.getElementById(board[x][y]).innerHTML == piece) {
+                    if (x + 2 < 3 && document.getElementById(board[x + 2][y]).innerHTML == "") {
+                        CompleteTurn(x + 2, y);
+                        return true;
+                    }
+                    else if (x + 2 >= 3) {
+                        if (document.getElementById(board[x - 1][y]).innerHTML == "") {
+                            CompleteTurn(x - 1, y);
+                            return true;
+                        }
+                    }
+                }
+                if (y + 1 < 3 && x + 1 < 3 && document.getElementById(board[x + 1][y + 1]).innerHTML == piece && document.getElementById(board[x][y]).innerHTML == piece) {
+                    if (y + 2 < 3 && x + 2 < 3 && document.getElementById(board[x + 2][y + 2]).innerHTML == "") {
+                        document.getElementById(board[x + 2][y + 2]).innerHTML = myPiece;
+                        CompleteTurn(x + 2, y + 2);
+                        return true;
+                    }
+                    else if (y + 2 >= 3 && x + 2 >= 3) {
+                        if (document.getElementById(board[x - 1][y - 1]).innerHTML == "") {
+                            CompleteTurn(x - 1, y - 1);
+                            return true;
+                        }
+                    }
+                }
+				if (y - 1 >= 0 && x + 1 < 3 && document.getElementById(board[x + 1][y - 1]).innerHTML == piece && document.getElementById(board[x][y]).innerHTML == piece) {
+                    if (y - 2 >= 0 && x + 2 < 3 && document.getElementById(board[x + 2][y - 2]).innerHTML == "") {
+                        CompleteTurn(x + 2, y - 2);
+                        return true;
+                    }
+                    else if (y - 2 < 0 && x + 2 >= 3) {
+                        if (document.getElementById(board[x - 1][y + 1]).innerHTML == "") {
+                            CompleteTurn(x - 1, y + 1);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    function CheckCornerTwos(piece) {
+        if (document.getElementById(corners[0]).innerHTML == piece) {
+            if (document.getElementById(corners[1]).innerHTML == piece) {
+                if (document.getElementById(board[0][1]).innerHTML == "") {
+                    CompleteTurn(0, 1);
+                    return true;
+                }
+            }
+            else if (document.getElementById(corners[2]).innerHTML == piece) {
+                if (document.getElementById(board[1][0]).innerHTML == "") {
+                    CompleteTurn(1, 0);
+                    return true;
+                }
+            }
+            else if (document.getElementById(corners[3]).innerHTML == piece) {
+                if (document.getElementById(board[1][1]).innerHTML == "") {
+                    CompleteTurn(1, 1);
+                    return true;
+                }
+            }
+        }
+        else if (document.getElementById(corners[1]).innerHTML == piece) {
+            if (document.getElementById(corners[2]).innerHTML == piece) {
+                if (document.getElementById(board[1][1]).innerHTML == "") {
+                    CompleteTurn(1, 1);
+                    return true;
+                }
+            }
+            else if (document.getElementById(corners[3]).innerHTML == piece) {
+                if (document.getElementById(board[1][2]).innerHTML == "") {
+                    CompleteTurn(1, 2);
+                    return true;
+                }
+            }
+        }
+        else if (document.getElementById(corners[2]).innerHTML == piece) {
+            if (document.getElementById(corners[3]).innerHTML == piece) {
+                if (document.getElementById(board[2][1]).innerHTML == "") {
+                    CompleteTurn(2, 1);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function SetTimer() {
+        var dt = new Date();
+        var sec;
+        var milSec;
+        var min;
+        timeDif = dt.getTime() - nowDate.getTime();
+        milSec = Math.floor(timeDif % 1000);
+        sec = Math.floor((timeDif) / 1000 % 60);
+        min = Math.floor(sec / 60);
+        document.getElementById('timer').innerHTML = ('0' + min.toString()).slice(-2) + ':' + ('0' + sec.toString()).slice(-2) + ':' + milSec.toString().substr(0, 2);
+        if (document.getElementById('Speedy').checked && timeDif > 1010) {
+            nowDate = new Date();
+            clearInterval(intervalID);
+            intervalID = setInterval(function () { SetTimer() }, 1);
+            ItsMyTurn();
+        }
+    }
+
+    </script>
+    <h1>Play with Kelly!</h1>
+    <p><b> Select your game piece:</b></p>
+    <p class="radioButtons"> X:<input type="radio" name="choosePiece" id="X" value="X" checked="checked" />
+        O:<input type="radio" name="choosePiece" id="O" value="O" /></p>
+    <p><b>Choose the game mode:</b></p>
+    <p class="radioButtons">Normal:<input type="radio" name="chooseMode" id="Normal" value="Normal" checked="checked" />
+       Speedy:<input type="radio" name="chooseMode" id="Speedy" value="Speedy" /></p>
+    <button id="start" onclick="StartGame();">Start Game</button>
+    <p id="whosturn"></p>
+    <p id="timer"></p>
+    <table id="tablegrid">
+        <tr>
+            <td>
+                <button id="grid1" class="gameboard" onclick="YouClick(0,0)" disabled="disabled">
+                </button>
+            </td>
+            <td>
+                <button id="grid2" class="gameboard" onclick="YouClick(0,1)" disabled="disabled">
+                </button>
+            </td>
+            <td>
+                <button id="grid3" class="gameboard" onclick="YouClick(0,2)" disabled="disabled">
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button id="grid4" class="gameboard" onclick="YouClick(1,0)" disabled="disabled">
+                </button>
+            </td>
+            <td>
+                <button id="grid5" class="gameboard" onclick="YouClick(1,1)" disabled="disabled">
+                </button>
+            </td>
+            <td>
+                <button id="grid6" class="gameboard" onclick="YouClick(1,2)" disabled="disabled">
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button id="grid7" class="gameboard" onclick="YouClick(2,0)" disabled="disabled">
+                </button>
+            </td>
+            <td>
+                <button id="grid8" class="gameboard" onclick="YouClick(2,1)" disabled="disabled">
+                </button>
+            </td>
+            <td>
+                <button id="grid9" class="gameboard" onclick="YouClick(2,2)" disabled="disabled">
+                </button>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

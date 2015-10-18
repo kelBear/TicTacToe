@@ -1,0 +1,40 @@
+.tablegrid 
+{
+	width: 300px;
+	height: 300px;
+	border: 1 px solid black;
+}
+
+
+.gameboard 
+{
+	width: 100px;
+	height: 100px;
+	text-align: center;
+	font-size: 80px;
+}
+
+p 
+{
+	font-family: Cooper Black;
+	font-size: 20px;
+}
+
+h1
+{
+	font-family: Chiller;
+	font-size: 40px;
+}
+
+#timer
+{
+	font-family: Arial;
+	position:relative;
+	font-size: 14px;
+	left: 250px;
+}
+
+.radioButtons
+{
+	font-size: 16px;
+}
